@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'akane/bigquery/version'
+require 'akane-bigquery/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "akane-bigquery"
-  spec.version       = Akane::Bigquery::VERSION
+  spec.version       = AkaneBigquery::VERSION
   spec.authors       = ["Shota Fukumori (sora_h)"]
   spec.email         = ["her@sorah.jp"]
   spec.summary       = %q{akane.gem Google Bigquery storage adapter}
