@@ -20,9 +20,10 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "akane", ">= 0.1.0"
   spec.add_dependency 'google-api-client', '>= 0.7.1'
+  spec.add_dependency 'thor', '>= 0.19.1'
 
   spec.add_development_dependency "bundler", "~> 1.6"
-  spec.add_development_dependency "rspec", "~> 3.0.2"
+  spec.add_development_dependency "rspec", "~> 3.0.0"
   spec.add_development_dependency "webmock", "~> 1.17.3"
   spec.add_development_dependency "rake"
 end
