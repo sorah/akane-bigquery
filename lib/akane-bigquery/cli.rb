@@ -10,8 +10,8 @@ module AkaneBigquery
     class_option :config_name,
       desc: "select bigquery configuration by name key. use this if you have multiple bigquery storages in config file"
 
-    desc "prepare", 'creates table on bigquery'
-    def prepare
+    desc "init", 'creates table on bigquery'
+    def init
       # check dataset existence
       dataset =  client.execute(
         api_method: api.datasets.get,
