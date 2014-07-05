@@ -23,6 +23,9 @@ module AkaneBigquery
             {'name' => 'in_reply_to_user_id', 'type' => 'INTEGER'},
             {'name' => 'in_reply_to_screen_name', 'type' => 'STRING'},
 
+            {'name' => 'retweeted_status_id_str', 'type' => 'STRING'},
+            {'name' => 'retweeted_status_id', 'type' => 'INTEGER'},
+
             {'name' => 'created_at', 'type' => 'TIMESTAMP', 'mode' => 'REQUIRED'},
 
             {
