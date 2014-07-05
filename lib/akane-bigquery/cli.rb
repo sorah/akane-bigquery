@@ -83,6 +83,11 @@ module AkaneBigquery
       end
     end
 
+    desc "prepare SOURCE PREFIX", "prepare JSONs on Cloud Storage for loading into BigQuery from existing file storage data"
+    def prepare(source, prefix)
+
+    end
+
     private
 
     def config
