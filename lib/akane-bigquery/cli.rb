@@ -86,6 +86,7 @@ module AkaneBigquery
 
     desc "prepare SOURCE DEST", "prepare JSONs or loading into BigQuery from existing file storage data"
     method_option :months, desc: "Names of months to process. Separeted by comma."
+    method_option :before, desc: "Dump only data before specified datetime. Value will be parsed by `Time.parse` of Ruby."
     def prepare(source, prefix)
       limit = 524288000 # 500MBytes
 
@@ -102,6 +103,7 @@ module AkaneBigquery
       io = new_io.call
 
       months = options[:months] && options[:months].split(/,/)
+      before = options[:before] && Time.parse(options[:before])
 
       userdirs = Dir.entries(File.join(source, "users"))
       userdirs.each_with_index do |user_dirname, index|
@@ -122,6 +124,10 @@ module AkaneBigquery
                 json = line.chomp
 
                 tweet  = Oj.load(json)
+
+                created_at = Time.parse(tweet['created_at'.freeze])
+                next if before && before <= created_at
+
                 new_json = {
                   'json'.freeze => json,
                   'id_str'.freeze => tweet['id_str'.freeze],
@@ -141,7 +147,7 @@ module AkaneBigquery
                     'screen_name'.freeze => tweet['user'.freeze]['screen_name'.freeze],
                     'protected'.freeze => tweet['user'.freeze]['protected'.freeze],
                   },
-                  'created_at'.freeze => Time.parse(tweet['created_at'.freeze]).to_i
+                  'created_at'.freeze => created_at.to_i
                 }
 
                 if tweet['coordinates'.freeze]
