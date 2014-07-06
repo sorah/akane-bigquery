@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "akane", ">= 0.1.0"
+  spec.add_dependency "akane", ">= 0.2.0"
   spec.add_dependency 'google-api-client', '>= 0.7.1'
   spec.add_dependency 'thor', '>= 0.19.1'
   spec.add_dependency 'oj'

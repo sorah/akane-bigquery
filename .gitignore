@@ -21,4 +21,5 @@ tmp
 *.a
 mkmf.log
 config.yml
+akane.yml
 *.p12
