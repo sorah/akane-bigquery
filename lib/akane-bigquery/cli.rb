@@ -1,6 +1,7 @@
 require 'akane-bigquery'
 require 'yaml'
 require 'thor'
+require 'oj'
 
 module AkaneBigquery
   class CLI < Thor
@@ -84,8 +85,95 @@ module AkaneBigquery
     end
 
     desc "prepare SOURCE PREFIX", "prepare JSONs on Cloud Storage for loading into BigQuery from existing file storage data"
+    method_option :months, desc: "Names of months to process. Separeted by comma."
     def prepare(source, prefix)
+      limit = 524288000 # 500MBytes
 
+      count = -1
+      bytes = 0
+
+      new_io = lambda do
+        bytes = 0
+        count += 1
+        path = File.join(prefix, "tweets.#{count.to_s.rjust(4,'0')}.txt")
+        puts "=> Using #{path}"
+        File.open(path, 'w')
+      end
+      io = new_io.call
+
+      months = options[:months] && options[:months].split(/,/)
+
+      userdirs = Dir.entries(File.join(source, "users"))
+      userdirs.each_with_index do |user_dirname, index|
+        next if user_dirname == "." || user_dirname == ".."
+        puts " * #{user_dirname} (#{index.succ}/#{userdirs.size}, #{((index.succ/userdirs.size.to_f)*100).to_i}%)"
+
+        userdir = File.join(source, "users", user_dirname)
+
+        tweet_filepaths = if options[:months]
+                            months.map { |_| File.join(userdir, "tweets.#{_}.txt") }
+                          else
+                            Dir[File.join(userdir, 'tweets.*.txt')]
+                          end
+        tweet_filepaths.each do |file|
+          begin
+            File.open(file, 'r') do |tweets_io|
+              tweets_io.each_line do |line|
+                json = line.chomp
+
+                tweet  = Oj.load(json)
+                new_json = {
+                  'json'.freeze => json,
+                  'id_str'.freeze => tweet['id_str'.freeze],
+                  'id'.freeze => tweet['id'.freeze],
+                  'text'.freeze => tweet['text'.freeze],
+                  'lang'.freeze => tweet['lang'.freeze],
+                  'source'.freeze => tweet['source'.freeze],
+                  'in_reply_to_status_id'.freeze => tweet['in_reply_to_status_id'.freeze],
+                  'in_reply_to_status_id_str'.freeze => tweet['in_reply_to_status_id_str'.freeze],
+                  'in_reply_to_user_id'.freeze => tweet['in_reply_to_user_id'.freeze],
+                  'in_reply_to_user_id_str'.freeze => tweet['in_reply_to_user_id_str'.freeze],
+                  'in_reply_to_screen_name'.freeze => tweet['in_reply_to_screen_name'.freeze],
+                  'user'.freeze => {
+                    'id_str'.freeze => tweet['user'.freeze]['id_str'.freeze],
+                    'id'.freeze => tweet['user'.freeze]['id'.freeze],
+                    'name'.freeze => tweet['user'.freeze]['name'.freeze],
+                    'screen_name'.freeze => tweet['user'.freeze]['screen_name'.freeze],
+                    'protected'.freeze => tweet['user'.freeze]['protected'.freeze],
+                  },
+                  'created_at'.freeze => Time.parse(tweet['created_at'.freeze]).to_i
+                }
+
+                if tweet['coordinates'.freeze]
+                  new_json['coordinates_longitude'.freeze] = tweet['coordinates'.freeze]['coordinates'.freeze][0]
+                  new_json['coordinates_latitude'.freeze] = tweet['coordinates'.freeze]['coordinates'.freeze][1]
+                end
+
+                if tweet['place'.freeze]
+                  place = tweet['place'.freeze]
+                  new_json['place'.freeze] = {
+                    'id'.freeze => place['id'.freeze],
+                    'country'.freeze => place['country'.freeze],
+                    'country_code'.freeze => place['country_code'.freeze],
+                    'name'.freeze => place['name'.freeze],
+                    'full_name'.freeze => place['full_name'.freeze],
+                    'place_type'.freeze => place['place_type'.freeze],
+                    'url'.freeze => place['url'.freeze],
+                  }
+                end
+
+                new_json_str = Oj.dump(new_json)
+                io.puts new_json_str
+                bytes += new_json_str.size + 1
+                io = new_io.call if limit <= bytes
+              end
+            end
+          rescue Errno::ENOENT
+          end
+
+        end
+
+      end
     end
 
     private
