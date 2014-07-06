@@ -84,7 +84,7 @@ module AkaneBigquery
       end
     end
 
-    desc "prepare SOURCE PREFIX", "prepare JSONs on Cloud Storage for loading into BigQuery from existing file storage data"
+    desc "prepare SOURCE DEST", "prepare JSONs or loading into BigQuery from existing file storage data"
     method_option :months, desc: "Names of months to process. Separeted by comma."
     def prepare(source, prefix)
       limit = 524288000 # 500MBytes
