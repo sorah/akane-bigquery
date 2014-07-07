@@ -5,13 +5,14 @@ require 'oj'
 
 module AkaneBigquery
   class CLI < Thor
-    class_option :config,
+    desc "init", 'creates table on bigquery'
+    method_option :config,
       required: true, aliases: %w(-c),
       desc: "path to akane config file (yml)"
-    class_option :config_name,
+    method_option :config_name,
       desc: "select bigquery configuration by name key. use this if you have multiple bigquery storages in config file"
 
-    desc "init", 'creates table on bigquery'
+
     def init
       # check dataset existence
       dataset =  client.execute(
